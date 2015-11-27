@@ -15,6 +15,9 @@
 #include <sys/uio.h>    /* uio struct */
 #include <sys/malloc.h>
 
+
+#include "bmp085.h"
+
 #define BUFFERSIZE 255
 
 /* Function prototypes */
