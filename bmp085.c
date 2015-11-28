@@ -90,11 +90,8 @@ echo_open(struct cdev *dev __unused, int oflags __unused, int devtype __unused,
 	char buf[255] = "t: 32\np: 10500\n\0";
 	ptr = buf;
 	do {
-		echomsg->msg[echomsg->len] = *ptr;
-		echomsg->len++;
+		echomsg->msg[echomsg->len++] = *ptr;
 	} while (*(++ptr) != '\0');
-
-	
 	
 	return (error);
 }
