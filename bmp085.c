@@ -63,11 +63,11 @@ echo_loader(struct module *m __unused, int what, void *arg __unused)
 		    GID_OPERATOR,
 		    0440,
 		    "bmp");
-		if (error != 0)
+		if (error != 0) {
 			break;
+		}
 
-		echomsg = malloc(sizeof(*echomsg), M_ECHOBUF, M_WAITOK |
-		    M_ZERO);
+		echomsg = malloc(sizeof(*echomsg), M_ECHOBUF, M_WAITOK | M_ZERO);
 		break;
 	case MOD_UNLOAD:
 		destroy_dev(echo_dev);
@@ -115,8 +115,9 @@ echo_read(struct cdev *dev __unused, struct uio *uio, int ioflag __unused)
 	amt = MIN(uio->uio_resid, uio->uio_offset >= echomsg->len + 1 ? 0 :
 	    echomsg->len + 1 - uio->uio_offset);
 
-	if ((error = uiomove(echomsg->msg, amt, uio)) != 0)
+	if ((error = uiomove(echomsg->msg, amt, uio)) != 0) {
 		uprintf("uiomove failed!\n");
+	}
 
 	return (error);
 }
