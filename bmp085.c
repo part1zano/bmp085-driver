@@ -14,6 +14,7 @@
 #include <sys/conf.h>   /* cdevsw struct */
 #include <sys/uio.h>    /* uio struct */
 #include <sys/malloc.h>
+#include <dev/iicbus/iic.h> /* iic-related shit */
 
 
 #include "bmp085.h"
@@ -68,6 +69,7 @@ echo_loader(struct module *m __unused, int what, void *arg __unused)
 		}
 
 		echomsg = malloc(sizeof(*echomsg), M_ECHOBUF, M_WAITOK | M_ZERO);
+		// here we initialize the bmp085
 		break;
 	case MOD_UNLOAD:
 		destroy_dev(echo_dev);
@@ -86,6 +88,7 @@ echo_open(struct cdev *dev __unused, int oflags __unused, int devtype __unused,
 {
 	int error = 0;
 	char *ptr;
+	// here we read the bmp085 and put what we read into char buf[255]
 
 	char buf[255] = "t: 32\np: 10500\n\0";
 	ptr = buf;
@@ -106,12 +109,7 @@ echo_read(struct cdev *dev __unused, struct uio *uio, int ioflag __unused)
 {
 	size_t amt;
 	int error;
-
-	/*
-	 * How big is this read operation?  Either as big as the user wants,
-	 * or as big as the remaining data.  Note that the 'len' does not
-	 * include the trailing null character.
-	 */
+	// this function should be unchanged, I guess
 	amt = MIN(uio->uio_resid, uio->uio_offset >= echomsg->len + 1 ? 0 :
 	    echomsg->len + 1 - uio->uio_offset);
 
@@ -124,3 +122,4 @@ echo_read(struct cdev *dev __unused, struct uio *uio, int ioflag __unused)
 
 
 DEV_MODULE(echo, echo_loader, NULL);
+// idk whether or not I should put something else here
