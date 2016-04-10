@@ -122,4 +122,7 @@ echo_read(struct cdev *dev __unused, struct uio *uio, int ioflag __unused)
 
 
 DEV_MODULE(echo, echo_loader, NULL);
+DRIVER_MODULE(bmp085, iicbus, bmp085_driver, bmp085_devclass, 0, 0); // copied from another one
+MODULE_VERSION(bmp085, 1);
+MODULE_DEPENDS(bmp085, iicbus, 1, 1, 1);
 // idk whether or not I should put something else here
