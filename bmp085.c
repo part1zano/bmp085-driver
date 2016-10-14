@@ -10,12 +10,18 @@
 #include <sys/module.h>
 #include <sys/systm.h>  /* uprintf */
 #include <sys/param.h>  /* defines used in kernel.h */
+#include <sys/bus.h>
 #include <sys/kernel.h> /* types used in module initialization */
 #include <sys/conf.h>   /* cdevsw struct */
 #include <sys/uio.h>    /* uio struct */
 #include <sys/malloc.h>
-// #include <dev/iicbus/iic.h> /* iic-related shit */
 
+#include <machine/bus.h>
+#include <dev/iicbus/iicbus.h>
+#include <dev/iicbus/iiconf.h>
+
+// #include "bus_if.h"
+// #include "device_if.h"
 
 #include "bmp085.h"
 
@@ -122,3 +128,7 @@ echo_read(struct cdev *dev __unused, struct uio *uio, int ioflag __unused)
 
 
 DEV_MODULE(echo, echo_loader, NULL);
+// DRIVER_MODULE(bmp085, iicbus, bmp085_driver, bmp085_devclass, 0, 0); // copied from another one
+// MODULE_VERSION(bmp085, 1);
+// MODULE_DEPENDS(bmp085, iicbus, 1, 1, 1);
+// idk whether or not I should put something else here
