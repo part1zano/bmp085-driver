@@ -6,22 +6,51 @@
  * Eitan Adler
  */
 
-#include <sys/types.h>
-#include <sys/module.h>
-#include <sys/systm.h>  /* uprintf */
-#include <sys/param.h>  /* defines used in kernel.h */
-#include <sys/bus.h>
-#include <sys/kernel.h> /* types used in module initialization */
-#include <sys/conf.h>   /* cdevsw struct */
-#include <sys/uio.h>    /* uio struct */
-#include <sys/malloc.h>
+// old includes? fuck these
+// #include <sys/types.h>
+// #include <sys/param.h>  /* defines used in kernel.h */
+// #include <sys/systm.h>  /* uprintf */
+// #include <sys/bus.h>
+// #include <sys/kernel.h> /* types used in module initialization */
+// #include <sys/module.h>
+// #include <sys/conf.h>   /* cdevsw struct */
+// #include <sys/uio.h>    /* uio struct */
+// #include <sys/malloc.h>
 
-#include <machine/bus.h>
-#include <dev/iicbus/iicbus.h>
-#include <dev/iicbus/iiconf.h>
+// // #include <machine/bus.h>
+// // #include <sys/rman.h>
+// // #include <machine/resource.h>
+// #include <dev/iicbus/iicbus.h>
+// #include <dev/iicbus/iiconf.h>
 
 // #include "bus_if.h"
 // #include "device_if.h"
+
+// new includes I just copied!
+
+#include <sys/cdefs.h>
+#include <sys/param.h>
+#include <sys/bus.h>
+#include <sys/systm.h>
+#include <sys/module.h>
+#include <sys/uio.h>    /* uio struct */
+#include <sys/malloc.h>
+#include <sys/callout.h>
+#include <sys/conf.h>
+#include <sys/cpu.h>
+#include <sys/ctype.h>
+#include <sys/kernel.h>
+#include <sys/reboot.h>
+#include <sys/rman.h>
+#include <sys/sysctl.h>
+#include <sys/limits.h>
+
+#include <machine/bus.h>
+#include <machine/md_var.h>
+
+#include <dev/iicbus/iicbus.h>
+#include <dev/iicbus/iiconf.h>
+
 
 #include "bmp085.h"
 
@@ -130,5 +159,5 @@ echo_read(struct cdev *dev __unused, struct uio *uio, int ioflag __unused)
 DEV_MODULE(echo, echo_loader, NULL);
 // DRIVER_MODULE(bmp085, iicbus, bmp085_driver, bmp085_devclass, 0, 0); // copied from another one
 // MODULE_VERSION(bmp085, 1);
-// MODULE_DEPENDS(bmp085, iicbus, 1, 1, 1);
+// MODULE_DEPENDS(echo, iicbus, 1, 1, 1);
 // idk whether or not I should put something else here
