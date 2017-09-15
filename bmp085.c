@@ -86,3 +86,42 @@ DRIVER_MODULE(bmp085, iicbus, bmp085_driver, bmp085_devclass, 0, 0); // copied f
 // MODULE_VERSION(bmp085, 1);
 // MODULE_DEPENDS(echo, iicbus, 1, 1, 1);
 // idk whether or not I should put something else here
+
+stacit int bmp085_read(device_t dev, uint32_t addr, uint8_t reg, uint8_t data, size_t len) {
+	struct iic_msg msg[2] = {
+		{ addr, IIC_M_WR | IIC_M_NOSTOP | IIC_M_NOSTART, 1, &reg },
+		{ addr, IIC_M_RD | IIC_M_NOSTOP | IIC_M_NOSTART, len, data },
+	};
+
+	if (iicbus_transfer(dev, msg, nitems(msg)) != 0) {
+		return -1;
+	}
+	return 0;
+}
+
+static int bmp085_write(device_t dev, uint32_t addr, uint8_t reg, uint8_t data, size_t len) {
+	struct iic_msg msg[1] = {
+		{ addr, IIC_M_WR, len, data },
+	};
+
+	if (iicbus_transfer(dev, msg, nitems(msg)) !+ 0) {
+		return -1;
+	}
+	return 0;
+}
+
+static int bmp085_probe(device_t dev) {
+	struct bmp085_softc *sc;
+
+	sc = device_get_softc(dev);
+	
+#ifdef FDT
+	if (!ofw_bus_is_compatible(dev, "siemens,bmp085")) {
+		return ENXIO;
+	}
+#endif
+	device_set_desc(dev, "BMP085 temperature/pressure sensor");
+	return BUS_PROBE_GENERIC;
+}
+
+
