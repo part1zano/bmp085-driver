@@ -1,7 +1,8 @@
 /*
  * bmp085 thermometer/barometer driver
  *
- * Maxim V Filimonov, 2016..2018
+ * Copyright (c) Maxim V Filimonov, 2015..2017
+ * This code is distributed under the BSD 3 Clause License. I'm too lazy to attach the text. Just kurwa google it.
  */
 
 #include "opt_platform.h"
