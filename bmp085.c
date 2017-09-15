@@ -1,55 +1,29 @@
 /*
- * Simple Echo pseudo-device KLD
+ * bmp085 thermometer/barometer driver
  *
- * Murray Stokely
- * Søren (Xride) Straarup
- * Eitan Adler
+ * Maxim V Filimonov, 2016..2018
  */
 
-// old includes? fuck these
-// #include <sys/types.h>
-// #include <sys/param.h>  /* defines used in kernel.h */
-// #include <sys/systm.h>  /* uprintf */
-// #include <sys/bus.h>
-// #include <sys/kernel.h> /* types used in module initialization */
-// #include <sys/module.h>
-// #include <sys/conf.h>   /* cdevsw struct */
-// #include <sys/uio.h>    /* uio struct */
-// #include <sys/malloc.h>
+#include "opt_platform.h"
 
-// // #include <machine/bus.h>
-// // #include <sys/rman.h>
-// // #include <machine/resource.h>
-// #include <dev/iicbus/iicbus.h>
-// #include <dev/iicbus/iiconf.h>
-
-// #include "bus_if.h"
-// #include "device_if.h"
-
-// new includes I just copied!
-
-#include <sys/cdefs.h>
 #include <sys/param.h>
 #include <sys/bus.h>
-#include <sys/systm.h>
-#include <sys/module.h>
-#include <sys/uio.h>    /* uio struct */
-#include <sys/malloc.h>
-#include <sys/callout.h>
-#include <sys/conf.h>
-#include <sys/cpu.h>
-#include <sys/ctype.h>
+#include <sys/endian.h>
 #include <sys/kernel.h>
-#include <sys/reboot.h>
-#include <sys/rman.h>
+#include <sys/module.h>
 #include <sys/sysctl.h>
-#include <sys/limits.h>
+#include <sys/systm.h>
 
 #include <machine/bus.h>
-#include <machine/md_var.h>
 
 #include <dev/iicbus/iicbus.h>
 #include <dev/iicbus/iiconf.h>
+
+#ifdef FDT
+#include <dev/ofw/openfirm.h>
+#include <dev/ofw/ofw_bus.h>
+#include <dev/ofw/ofw_bus_subr.h>
+#endif
 
 #include "bmp085.h"
 
@@ -66,7 +40,6 @@ struct bmp085_softc {
 };
 
 
-// XXX :: I don't know whether or not I should leave this empty
 static device_method_t bmp085_methods[] = {
 	DEVMETHOD(device_probe, bmp085_probe),
 	DEVMETHOD(device_attach, bmp085_attach),
@@ -87,7 +60,7 @@ DRIVER_MODULE(bmp085, iicbus, bmp085_driver, bmp085_devclass, 0, 0); // copied f
 // MODULE_DEPENDS(echo, iicbus, 1, 1, 1);
 // idk whether or not I should put something else here
 
-stacit int bmp085_read(device_t dev, uint32_t addr, uint8_t reg, uint8_t data, size_t len) {
+static int bmp085_read(device_t dev, uint32_t addr, uint8_t reg, uint8_t *data, size_t len) {
 	struct iic_msg msg[2] = {
 		{ addr, IIC_M_WR | IIC_M_NOSTOP | IIC_M_NOSTART, 1, &reg },
 		{ addr, IIC_M_RD | IIC_M_NOSTOP | IIC_M_NOSTART, len, data },
@@ -99,12 +72,12 @@ stacit int bmp085_read(device_t dev, uint32_t addr, uint8_t reg, uint8_t data, s
 	return 0;
 }
 
-static int bmp085_write(device_t dev, uint32_t addr, uint8_t reg, uint8_t data, size_t len) {
+static int bmp085_write(device_t dev, uint32_t addr, uint8_t reg, uint8_t *data, size_t len) {
 	struct iic_msg msg[1] = {
 		{ addr, IIC_M_WR, len, data },
 	};
 
-	if (iicbus_transfer(dev, msg, nitems(msg)) !+ 0) {
+	if (iicbus_transfer(dev, msg, nitems(msg)) != 0) {
 		return -1;
 	}
 	return 0;
