@@ -1,0 +1,12 @@
+Index: Makefile
+===================================================================
+--- Makefile	(revision 323600)
++++ Makefile	(working copy)
+@@ -1,6 +1,7 @@
+ # $FreeBSD$
+ 
+ SUBDIR = \
++	bmp085 \
+ 	controllers \
+ 	cyapa \
+ 	ds1307 \
