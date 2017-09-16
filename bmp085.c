@@ -225,6 +225,7 @@ static void bmp085_start(void *xdev) {
 static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
 	device_t dev;
 	struct bmp085_softc *sc;
+	int error;
 
 	dev = (device_t)arg1;
 	sc = device_get_softc(dev);
