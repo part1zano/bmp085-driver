@@ -144,68 +144,79 @@ static void bmp085_start(void *xdev) {
 	uint8_t buffer_rx[2];
 
 	buffer_tx = BMP_AC1;
-	if (bmp085_read(sc->sc_dev, buffer_tx, buffer_tx, 2*sizeof(uint8_t)) < 0) {
-		return -1;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_tx, 2*sizeof(uint8_t)) < 0) {
+		device_printf("cannot write to sensor\n");
+		return;
 	}
 	param.ac1 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	buffer_tx = BMP_AC2;
-	if (bmp085_read(sc->sc_dev, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		return -1;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_tx, 2*sizeof(uint8_t)) < 0) {
+		device_printf("cannot write to sensor\n");
+		return;
 	}
 	param.ac2 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	buffer_tx = BMP_AC3;
-	if (bmp085_read(sc->sc_dev, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		retunr -1;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_tx, 2*sizeof(uint8_t)) < 0) {
+		device_printf("cannot write to sensor\n");
+		return;
 	}
 	param.ac3 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	buffer_tx = BMP_AC4;
-	if (bmp085_read(sc->sc_dev, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		return -1;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_tx, 2*sizeof(uint8_t)) < 0) {
+		device_printf("cannot write to sensor\n");
+		return;
 	}
 	param.ac4 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	buffer_tx = BMP_AC5;
-	if (bmp085_read(sc_sc_dev, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		return -1;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_tx, 2*sizeof(uint8_t)) < 0) {
+		device_printf("cannot write to sensor\n");
+		return;
 	}
 	param.ac5 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	buffer_tx = BMP_AC6;
-	if (bmp085_read(sc->sc_dev, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		return -1;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_tx, 2*sizeof(uint8_t)) < 0) {
+		device_printf("cannot write to sensor\n");
+		return;
 	}
 	param.ac6 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	buffer_tx = BMP_B1;
-	if (bmp085_read(sc->sc_dev, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		return -1;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_tx, 2*sizeof(uint8_t)) < 0) {
+		device_printf("cannot write to sensor\n");
+		return;
 	}
 	param.b1 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 
 	buffer_tx = BMP_B2;
-	if (bmp085_read(sc->sc_dev, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		return -1;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_tx, 2*sizeof(uint8_t)) < 0) {
+		device_printf("cannot write to sensor\n");
+		return;
 	}
 	param.b2 = ((buffer_rx[0] << 0) | buffer_rx[1]);
 
 	buffer_tx = BMP_MB;
-	if (bmp085_read(sc->sc_dev, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		return -1;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_tx, 2*sizeof(uint8_t)) < 0) {
+		device_printf("cannot write to sensor\n");
+		return;
 	}
 	param.mb = ((buffer_rx[0] << 0) | buffer_rx[1]);
 
 	buffer_tx = BMP_MC;
-	if (bmp085_read(sc->sc_dev, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		return -1;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_tx, 2*sizeof(uint8_t)) < 0) {
+		device_printf("cannot write to sensor\n");
+		return;
 	}
 	param.mc = ((buffer_rx[0] << 0) | buffer_rx[1]);
 
 	buffer_tx = BMP_MD;
-	if (bmp085_read(sc->sc_dev, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		return -1;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_tx, 2*sizeof(uint8_t)) < 0) {
+		device_printf("cannot write to sensor\n");
+		return;
 	}
 	param.md = ((buffer_rx[0] << 0) | buffer_rx[1]);
 	
