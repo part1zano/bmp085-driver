@@ -41,6 +41,7 @@ struct bmp085_softc {
 };
 
 
+
 static device_method_t bmp085_methods[] = {
 	DEVMETHOD(device_probe, bmp085_probe),
 	DEVMETHOD(device_attach, bmp085_attach),
@@ -98,4 +99,19 @@ static int bmp085_probe(device_t dev) {
 	return BUS_PROBE_GENERIC;
 }
 
+static int bmp085_attach(device_t dev) {
+	struct bmp085_softc *sc;
+
+	sc = device_get_softc(dev);
+	sc -> sc_dev = dev;
+	sc -> sc_addr = iicbus_get_addr(dev);
+
+	sc -> enum_hook.ich_func = bmp085_start;
+	sc -> enum_hook.ich_arg = dev;
+
+	if (config_intrhook_establish(&sc->enum_hook) != 0) {
+		return ENOMEM;
+	}
+	return 0;
+}
 
