@@ -42,6 +42,8 @@ struct bmp085_softc {
 };
 
 static void bmp085_start(void *);
+static int bmp085_read(device_t, uint32_t, uint8_t, uint8_t *, size_t);
+static int bmp085_write(device_t, uint32_t, uint8_t, uint8_t *, size_t);
 static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS);
 static int bmp085_pressure_sysctl(SYSCTL_HANDLER_ARGS);
 
@@ -89,9 +91,11 @@ static int bmp085_write(device_t dev, uint32_t addr, uint8_t reg, uint8_t *data,
 }
 
 static int bmp085_probe(device_t dev) {
+	uprintf("probing bmp085\n");
 	struct bmp085_softc *sc;
 
 	sc = device_get_softc(dev);
+	device_printf(dev, "probing bmp085\n");
 	
 #ifdef FDT
 	if (!ofw_bus_is_compatible(dev, "siemens,bmp085")) {
@@ -99,11 +103,13 @@ static int bmp085_probe(device_t dev) {
 	}
 #endif
 	device_set_desc(dev, "BMP085 temperature/pressure sensor");
+	uprintf("about to return BUS_PROBE_GENERIC\n");
 	return BUS_PROBE_GENERIC;
 }
 
 static int bmp085_attach(device_t dev) {
 	struct bmp085_softc *sc;
+	uprintf("attaching bmp085\n");
 
 	sc = device_get_softc(dev);
 	sc -> sc_dev = dev;
@@ -115,10 +121,12 @@ static int bmp085_attach(device_t dev) {
 	if (config_intrhook_establish(&sc->enum_hook) != 0) {
 		return ENOMEM;
 	}
+	device_printf(dev, "about to finish attaching device\n");
 	return 0;
 }
 
 static void bmp085_start(void *xdev) {
+	uprintf("about to start bmp085");
 	device_t dev;
 	struct bmp085_softc *sc;
 	struct sysctl_ctx_list *ctx;
@@ -137,7 +145,7 @@ static void bmp085_start(void *xdev) {
 			CTLTYPE_INT | CTLFLAG_RD | CTLFLAG_MPSAFE, dev, 33,
 			bmp085_temp_sysctl, "IK", "Current temperature");
 	SYSCTL_ADD_PROC(ctx, tree, OID_AUTO, "pressure",
-			CTLTYPE_INT | CTLFLAG_RD | CTLFLAG_MPSAFE, dev, 33,
+			CTLTYPE_INT | CTLFLAG_RD | CTLFLAG_MPSAFE, dev, 34,
 			bmp085_pressure_sysctl, "IK", "Current athmospheric pressure");
 	// now we're just setting it up
 	uint8_t buffer_tx;
@@ -220,6 +228,8 @@ static void bmp085_start(void *xdev) {
 	}
 	param.md = ((buffer_rx[0] << 0) | buffer_rx[1]);
 	
+	device_printf(dev, "started bmp085");
+	uprintf("started bmp085");
 }
 
 static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
