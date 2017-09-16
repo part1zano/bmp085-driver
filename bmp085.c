@@ -137,7 +137,7 @@ static void bmp085_start(void *xdev) {
 			CTLTYPE_INT | CTLFLAG_RD | CTLFLAG_MPSAFE, dev, 33,
 			bmp085_temp_sysctl, "IK", "Current temperature");
 	SYSCTL_ADD_PROC(ctx, tree, OID_AUTO, "pressure",
-			CTLTYPE_INT | CTLFLAG_RD | CLTFLAG_MPSAFE, dev, 33,
+			CTLTYPE_INT | CTLFLAG_RD | CTLFLAG_MPSAFE, dev, 33,
 			bmp085_pressure_sysctl, "IK", "Current athmospheric pressure");
 	// now we're just setting it up
 	uint8_t buffer_tx;
@@ -277,6 +277,8 @@ static int bmp085_pressure_sysctl(SYSCTL_HANDLER_ARGS) {
 	uint8_t buffer_tx[2];
 	uint8_t buffer_rx[3];
 
+	b3 = 0;
+
 	buffer_tx[0] = BMP_MODE_PR0+(oss<<6);
 	if (bmp085_write(sc->sc_dev, sc->sc_addr, BMP_CR, &buffer_tx[1], 1) != 0) {
 		device_printf(dev, "couldnt get pressure at first\n");
@@ -289,7 +291,7 @@ static int bmp085_pressure_sysctl(SYSCTL_HANDLER_ARGS) {
 	}
 
 	upress = (int32_t)((buffer_rx[0] << 16) | (buffer_rx[1] << 8) | buffer_rx[2]);
-	upress = puress >> (8-oss);
+	upress = upress >> (8-oss);
 
 	b6 = param.b5 - 4000;
 	x1 = (param.b2*((b6*b6)/4096))/2048;
