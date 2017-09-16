@@ -43,7 +43,7 @@ struct bmp085_softc {
 
 static void bmp085_start(void *);
 static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS);
-// static int bmp085_pressure_sysctl(SYSCTL_HANDLER_ARGS);
+static int bmp085_pressure_sysctl(SYSCTL_HANDLER_ARGS);
 
 static device_method_t bmp085_methods[] = {
 	DEVMETHOD(device_probe, bmp085_probe),
@@ -136,9 +136,9 @@ static void bmp085_start(void *xdev) {
 	SYSCTL_ADD_PROC(ctx, tree, OID_AUTO, "temperature",
 			CTLTYPE_INT | CTLFLAG_RD | CTLFLAG_MPSAFE, dev, 33,
 			bmp085_temp_sysctl, "IK", "Current temperature");
-	// SYSCTL_ADD_PROC(ctx, tree, OID_AUTO, "pressure",
-	// 		CTLTYPE_INT | CTLFLAG_RD | CLTFLAG_MPSAFE, dev, BMP085_PRESS,
-	// 		bmp085_pressure_sysctl, "IK", "Current athmospheric pressure");
+	SYSCTL_ADD_PROC(ctx, tree, OID_AUTO, "pressure",
+			CTLTYPE_INT | CTLFLAG_RD | CLTFLAG_MPSAFE, dev, 33,
+			bmp085_pressure_sysctl, "IK", "Current athmospheric pressure");
 	// now we're just setting it up
 	uint8_t buffer_tx;
 	uint8_t buffer_rx[2];
@@ -259,4 +259,72 @@ static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
 	return 0;
 }
 
+static int bmp085_pressure_sysctl(SYSCTL_HANDLER_ARGS) {
+	device_t dev;
+	struct bmp085_softc *sc;
+	int error;
 
+	dev = (device_t)arg1;
+	sc = device_get_softc(dev);
+
+	int32_t upress;
+	int32_t x1, x2, x3;
+	int32_t b3, b6;
+	uint32_t b4, b7;
+	uint8_t oss = 3;
+	int32_t pressure = 0;
+
+	uint8_t buffer_tx[2];
+	uint8_t buffer_rx[3];
+
+	buffer_tx[0] = BMP_MODE_PR0+(oss<<6);
+	if (bmp085_write(sc->sc_dev, sc->sc_addr, BMP_CR, &buffer_tx[1], 1) != 0) {
+		device_printf(dev, "couldnt get pressure at first\n");
+		return EIO;
+	}
+
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, BMP_DATA, buffer_rx, 3*sizeof(uint8_t)) != 0) {
+		device_printf(dev, "couldn't actually get pressure\n");
+		return EIO;
+	}
+
+	upress = (int32_t)((buffer_rx[0] << 16) | (buffer_rx[1] << 8) | buffer_rx[2]);
+	upress = puress >> (8-oss);
+
+	b6 = param.b5 - 4000;
+	x1 = (param.b2*((b6*b6)/4096))/2048;
+	x2 = (param.ac2*b6)/2048;
+	x3 = x1+x2;
+
+	if (oss == 3) {
+		b3 = ((int32_t)param.ac1 * 4 + x3 + 2) << 1;
+	} else if (oss == 2) {
+		b3 = ((int32_t)param.ac1 * 4 + x3 + 2);
+	} else if (oss == 1) {
+		b3 = ((int32_t)param.ac1 * 4 + x3 + 2) >> 1;
+	} else if (oss == 0) {
+		b3 = ((int32_t)param.ac1 * 4 + x3 + 2) >> 2;
+	}
+	x1 = ((param.ac3)*b6)/8192;
+	x2 = (param.b1 * (b6*b6/4096))/65536;
+	x3 = ((x1 + x2) + 2)/4;
+	b4 = param.ac4 * (uint32_t)(x3 + 32768)/32768;
+	b7 = ((uint32_t)upress - b3)*(50000 >> oss);
+	if (b7 < 0x80000000) {
+		pressure = (b7*2)/b4;
+	}
+	else {
+		pressure = (b7/b4)*2;
+	}
+	x1 = (pressure/256)*(pressure/256);
+	x1 = (x1*3038)/65536;
+	x2 = (-7357*pressure)/65536;
+	pressure = pressure + (x1 + x2 + 3791)/16;
+
+	error = sysctl_handle_int(oidp, &pressure, 0, req);
+	if (error != 0 || req -> newptr == NULL) {
+		return error;
+	}
+	return 0;
+
+}
