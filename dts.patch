@@ -1,0 +1,28 @@
+Index: sys/boot/fdt/dts/arm/rpi2.dts
+===================================================================
+--- sys/boot/fdt/dts/arm/rpi2.dts	(revision 323600)
++++ sys/boot/fdt/dts/arm/rpi2.dts	(working copy)
+@@ -75,7 +75,17 @@
+ 	};
+ 
+ 	axi {
+-		gpio: gpio {
++		bsc0 { /* begin {added by mf} */
++			status = "okay";
++			bmp@77 {
++				compatible = "bosch,bmp085";
++				reg = <0x77>;
++				status = "okay";
++			};
++		}; /* end {added by mf} */
++
++
++			gpio: gpio {
+ 			/* BSC0 */
+ 			pins_bsc0_a: bsc0_a {
+ 				broadcom,function = "ALT0";
+@@ -410,3 +420,4 @@
+ 		cache_line_size  = <&vchiq>, "cache-line-size:0";
+ 	};
+ };
++
