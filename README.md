@@ -7,8 +7,10 @@ A driver for the BMP085 barometer/thermometer
  * Create the appropriate folder in `sys/modules/i2c`: `mkdir sys/modules/i2c/bmp085`
  * Edit the Makefile appropriately (e.g. change the path) and place it to the created directory
  * Apply the bmp085.patch: `patch -p0 < /path/to/bmp085-driver/bmp085.patch`
+ * Apply the dts patch: patch -p0 < /path/to/rpi-dts.patch
  * Build the toolchain and the kernel, e.g. for Raspberry Pi do the following: `make TARGET_ARCH=armv6 KERNCONF=RPI2 kernel-toolchain buildkernel`
  * Build the module itself: `make TARGET_ARCH=armv6 KERNFAST=RPI2 OVERRIDE_MODULES=i2c/bmp085 buildkernel`
+ * Copy the dtb to `/boot/dtb` as well as to `boot/msdos/` (rpi only): `cp /usr/obj/<your freebsd src dir>/sys/RPI2/modules/<your freebsd src dir>sys/modules/dtb/rpi/rpi2.dtb /path/to/boot/dtb`
  * Copy the resulting `.ko` to the appropriate directory: `cp sys/dev/i2c/bmp085.ko /path/to/rpi-boot`
  * Don't forget about dts (info coming soon)
  * On the Raspberry Pi, use `kldload` to use it: `kldload bmp085`
