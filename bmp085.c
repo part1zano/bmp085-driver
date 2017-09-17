@@ -31,6 +31,7 @@
 static bmp085_param param;
 static int bmp085_probe(device_t);
 static int bmp085_attach(device_t);
+static int bmp085_detach(device_t);
 
 // XXX :: I don't know what _softc does yet
 struct bmp085_softc {
@@ -50,6 +51,7 @@ static int bmp085_pressure_sysctl(SYSCTL_HANDLER_ARGS);
 static device_method_t bmp085_methods[] = {
 	DEVMETHOD(device_probe, bmp085_probe),
 	DEVMETHOD(device_attach, bmp085_attach),
+	DEVMETHOD(device_detach, bmp085_detach),
 
 	DEVMETHOD_END
 };
@@ -69,8 +71,8 @@ DRIVER_MODULE(bmp085, iicbus, bmp085_driver, bmp085_devclass, 0, 0); // copied f
 
 static int bmp085_read(device_t dev, uint32_t addr, uint8_t reg, uint8_t *data, size_t len) {
 	struct iic_msg msg[2] = {
-		{ addr, IIC_M_WR | IIC_M_NOSTOP | IIC_M_NOSTART, 1, &reg },
-		{ addr, IIC_M_RD | IIC_M_NOSTOP | IIC_M_NOSTART, len, data },
+		{ addr, IIC_M_WR, 1, &reg },
+		{ addr, IIC_M_RD, len, data },
 	};
 
 	if (iicbus_transfer(dev, msg, nitems(msg)) != 0) {
@@ -91,7 +93,7 @@ static int bmp085_write(device_t dev, uint32_t addr, uint8_t reg, uint8_t *data,
 }
 
 static int bmp085_probe(device_t dev) {
-	uprintf("probing bmp085\n");
+	device_printf(dev, "about to probe bmp085\n");
 	struct bmp085_softc *sc;
 
 	sc = device_get_softc(dev);
@@ -103,13 +105,13 @@ static int bmp085_probe(device_t dev) {
 	}
 #endif
 	device_set_desc(dev, "BMP085 temperature/pressure sensor");
-	uprintf("about to return BUS_PROBE_GENERIC\n");
+	device_printf(dev, "about to return BUS_PROBE_GENERIC\n");
 	return BUS_PROBE_GENERIC;
 }
 
 static int bmp085_attach(device_t dev) {
 	struct bmp085_softc *sc;
-	uprintf("attaching bmp085\n");
+	device_printf(dev, "attaching bmp085\n");
 
 	sc = device_get_softc(dev);
 	sc -> sc_dev = dev;
@@ -125,8 +127,11 @@ static int bmp085_attach(device_t dev) {
 	return 0;
 }
 
+static int bmp085_detach(device_t dev) {
+	return 0;
+}
+
 static void bmp085_start(void *xdev) {
-	uprintf("about to start bmp085");
 	device_t dev;
 	struct bmp085_softc *sc;
 	struct sysctl_ctx_list *ctx;
@@ -134,6 +139,7 @@ static void bmp085_start(void *xdev) {
 	struct sysctl_oid_list *tree;
 
 	dev = (device_t)xdev;
+	device_printf(dev, "about to start bmp085\n");
 	sc = device_get_softc(dev);
 	ctx = device_get_sysctl_ctx(dev);
 	tree_node = device_get_sysctl_tree(dev);
@@ -143,10 +149,10 @@ static void bmp085_start(void *xdev) {
 
 	SYSCTL_ADD_PROC(ctx, tree, OID_AUTO, "temperature",
 			CTLTYPE_INT | CTLFLAG_RD | CTLFLAG_MPSAFE, dev, 33,
-			bmp085_temp_sysctl, "IK", "Current temperature");
+			bmp085_temp_sysctl, "I", "Current temperature");
 	SYSCTL_ADD_PROC(ctx, tree, OID_AUTO, "pressure",
 			CTLTYPE_INT | CTLFLAG_RD | CTLFLAG_MPSAFE, dev, 34,
-			bmp085_pressure_sysctl, "IK", "Current athmospheric pressure");
+			bmp085_pressure_sysctl, "I", "Current athmospheric pressure");
 	// now we're just setting it up
 	uint8_t buffer_tx;
 	uint8_t buffer_rx[2];
@@ -227,9 +233,9 @@ static void bmp085_start(void *xdev) {
 		return;
 	}
 	param.md = ((buffer_rx[0] << 0) | buffer_rx[1]);
+	// device_printf(dev, "with md, buffer_rx[1] is %d\n", buffer_rx[1]);
 	
-	device_printf(dev, "started bmp085");
-	uprintf("started bmp085");
+	device_printf(dev, "started bmp085\n");
 }
 
 static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
@@ -254,6 +260,7 @@ static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
 	if (bmp085_read(sc->sc_dev, sc->sc_addr, BMP_DATA, buffer_rx, 2*sizeof(uint8_t)) != 0) {
 		return EIO;
 	}
+	device_printf(dev, "got bmp085 temps: %x, %x\n", buffer_rx[0], buffer_rx[1]);
 
 	utemp = (int32_t)((buffer_rx[0] << 8) | buffer_rx[1]);
 
@@ -261,6 +268,7 @@ static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
 	x2 = (param.mc*2048) / (x1 + param.md);
 	param.b5 = x1 + x2;
 	temperature = (param.b5 + 8) / 16;
+	device_printf(dev, "temperature*10 is %d\n", temperature);
 
 	error = sysctl_handle_int(oidp, &temperature, 0, req);
 	if (error != 0 || req -> newptr == NULL) {
