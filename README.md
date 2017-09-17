@@ -12,7 +12,6 @@ A driver for the BMP085 barometer/thermometer
  * Build the module itself: `make TARGET_ARCH=armv6 KERNFAST=RPI2 OVERRIDE_MODULES=i2c/bmp085 buildkernel`
  * Copy the dtb to `/boot/dtb` as well as to `boot/msdos/` (rpi only): `cp /usr/obj/<your freebsd src dir>/sys/RPI2/modules/<your freebsd src dir>sys/modules/dtb/rpi/rpi2.dtb /path/to/boot/dtb`
  * Copy the resulting `.ko` to the appropriate directory: `cp sys/dev/i2c/bmp085.ko /path/to/rpi-boot`
- * Don't forget about dts (info coming soon)
  * On the Raspberry Pi, use `kldload` to use it: `kldload bmp085`
  * Use it! View `sysctl dev.bmp085` to see the temperature and pressure.
 
