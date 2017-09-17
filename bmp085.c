@@ -285,7 +285,7 @@ static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
 	// device_printf(dev, "b5 is %d\n", param.b5);
 
 	temperature = (param.b5 + 8) / 16;
-	temperature -= 200; // XXX :: I don't know why it shows more than it should
+	// temperature -= 150; // XXX :: I don't know why it shows more than it should
 	// device_printf(dev, "temperature*10 is %d\n", temperature);
 
 	error = sysctl_handle_int(oidp, &temperature, 0, req);
