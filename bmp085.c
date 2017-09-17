@@ -283,7 +283,6 @@ static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
 	device_printf(dev, "x2 is %d\n", x2);
 	param.b5 = x1 + x2;
 	device_printf(dev, "b5 is %d\n", param.b5);
-	param.b5 = x1+x2;
 
 	temperature = (param.b5 + 8) / 16 - 200;
 	device_printf(dev, "temperature*10 is %d\n", temperature);
