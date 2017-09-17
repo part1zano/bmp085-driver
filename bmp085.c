@@ -90,11 +90,11 @@ static int bmp085_write(device_t dev, uint32_t addr, uint8_t *data, size_t len) 
 }
 
 static int bmp085_probe(device_t dev) {
-	device_printf(dev, "about to probe bmp085\n");
+	// device_printf(dev, "about to probe bmp085\n");
 	struct bmp085_softc *sc;
 
 	sc = device_get_softc(dev);
-	device_printf(dev, "probing bmp085\n");
+	// device_printf(dev, "probing bmp085\n");
 	
 #ifdef FDT
 	if (!ofw_bus_is_compatible(dev, "bosch,bmp085")) {
@@ -102,13 +102,13 @@ static int bmp085_probe(device_t dev) {
 	}
 #endif
 	device_set_desc(dev, "BMP085 temperature/pressure sensor");
-	device_printf(dev, "about to return BUS_PROBE_GENERIC\n");
+	// device_printf(dev, "about to return BUS_PROBE_GENERIC\n");
 	return BUS_PROBE_GENERIC;
 }
 
 static int bmp085_attach(device_t dev) {
 	struct bmp085_softc *sc;
-	device_printf(dev, "attaching bmp085\n");
+	// device_printf(dev, "attaching bmp085\n");
 
 	sc = device_get_softc(dev);
 	sc -> sc_dev = dev;
@@ -120,7 +120,7 @@ static int bmp085_attach(device_t dev) {
 	if (config_intrhook_establish(&sc->enum_hook) != 0) {
 		return ENOMEM;
 	}
-	device_printf(dev, "about to finish attaching device\n");
+	// device_printf(dev, "about to finish attaching device\n");
 	return 0;
 }
 
@@ -136,7 +136,7 @@ static void bmp085_start(void *xdev) {
 	struct sysctl_oid_list *tree;
 
 	dev = (device_t)xdev;
-	device_printf(dev, "about to start bmp085\n");
+	// device_printf(dev, "about to start bmp085\n");
 	sc = device_get_softc(dev);
 	ctx = device_get_sysctl_ctx(dev);
 	tree_node = device_get_sysctl_tree(dev);
@@ -242,7 +242,7 @@ static void bmp085_start(void *xdev) {
 	param.md = ((buffer_rx[0] << 0) | buffer_rx[1]);
 	// device_printf(dev, "with md, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 	
-	device_printf(dev, "started bmp085\n");
+	// device_printf(dev, "started bmp085\n");
 }
 
 static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
@@ -272,7 +272,7 @@ static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
 		device_printf(dev, "couldnt read from BMP_DATA\n");
 		return EIO;
 	}
-	device_printf(dev, "got bmp085 temps: %x, %x\n", buffer_rx[0], buffer_rx[1]);
+	// device_printf(dev, "got bmp085 temps: %x, %x\n", buffer_rx[0], buffer_rx[1]);
 
 	utemp = (int32_t)((buffer_rx[0] << 8) | buffer_rx[1]);
 	// device_printf(dev, "utemp is %d\n", utemp);
