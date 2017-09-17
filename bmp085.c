@@ -275,17 +275,18 @@ static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
 	device_printf(dev, "got bmp085 temps: %x, %x\n", buffer_rx[0], buffer_rx[1]);
 
 	utemp = (int32_t)((buffer_rx[0] << 8) | buffer_rx[1]);
-	device_printf(dev, "utemp is %d\n", utemp);
+	// device_printf(dev, "utemp is %d\n", utemp);
 
 	x1 = ((utemp-param.ac6) * param.ac5)/32768;
-	device_printf(dev, "x1 is %d\n", x1);
+	// device_printf(dev, "x1 is %d\n", x1);
 	x2 = (param.mc*2048) / (x1 + param.md);
-	device_printf(dev, "x2 is %d\n", x2);
+	// device_printf(dev, "x2 is %d\n", x2);
 	param.b5 = x1 + x2;
-	device_printf(dev, "b5 is %d\n", param.b5);
+	// device_printf(dev, "b5 is %d\n", param.b5);
 
-	temperature = (param.b5 + 8) / 16 - 200;
-	device_printf(dev, "temperature*10 is %d\n", temperature);
+	temperature = (param.b5 + 8) / 16;
+	temperature -= 200; // XXX :: I don't know why it shows more than it should
+	// device_printf(dev, "temperature*10 is %d\n", temperature);
 
 	error = sysctl_handle_int(oidp, &temperature, 0, req);
 	if (error != 0 || req -> newptr == NULL) {
@@ -325,7 +326,7 @@ static int bmp085_pressure_sysctl(SYSCTL_HANDLER_ARGS) {
 		device_printf(dev, "couldn't actually get pressure\n");
 		return EIO;
 	}
-	device_printf(dev, "buffer_rx is: {%x, %x, %x}\n", buffer_rx[0], buffer_rx[1], buffer_rx[2]);
+	// device_printf(dev, "buffer_rx is: {%x, %x, %x}\n", buffer_rx[0], buffer_rx[1], buffer_rx[2]);
 
 	upress = (int32_t)((buffer_rx[0] << 16) | (buffer_rx[1] << 8) | buffer_rx[2]);
 	upress = upress >> (8-oss);
@@ -359,6 +360,7 @@ static int bmp085_pressure_sysctl(SYSCTL_HANDLER_ARGS) {
 	x1 = (x1*3038)/65536;
 	x2 = (-7357*pressure)/65536;
 	pressure = pressure + (x1 + x2 + 3791)/16;
+	pressure -= 5000; // XXX :: I don't know why it shows more than it should
 
 	error = sysctl_handle_int(oidp, &pressure, 0, req);
 	if (error != 0 || req -> newptr == NULL) {
