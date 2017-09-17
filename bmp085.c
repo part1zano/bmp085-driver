@@ -267,7 +267,7 @@ static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
 		return EIO;
 	}
 	// pause needed
-	pause("sleep between i2c transactions", 15);
+	pause("sleep between i2c transactions", 5);
 	if (iicdev_readfrom(sc->sc_dev, BMP_DATA, buffer_rx, 2, IIC_WAIT) != 0) {
 		device_printf(dev, "couldnt read from BMP_DATA\n");
 		return EIO;
@@ -360,7 +360,7 @@ static int bmp085_pressure_sysctl(SYSCTL_HANDLER_ARGS) {
 	x1 = (x1*3038)/65536;
 	x2 = (-7357*pressure)/65536;
 	pressure = pressure + (x1 + x2 + 3791)/16;
-	pressure -= 5000; // XXX :: I don't know why it shows more than it should
+	// pressure -= 5000; // XXX :: I don't know why it shows more than it should
 
 	error = sysctl_handle_int(oidp, &pressure, 0, req);
 	if (error != 0 || req -> newptr == NULL) {
