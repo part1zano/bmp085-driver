@@ -33,13 +33,10 @@ static int bmp085_probe(device_t);
 static int bmp085_attach(device_t);
 static int bmp085_detach(device_t);
 
-// XXX :: I don't know what _softc does yet
 struct bmp085_softc {
 	device_t		sc_dev;
 	struct intr_config_hook enum_hook;
-	int32_t			sc_hwtype;
 	uint32_t		sc_addr;
-	uint32_t		sc_conf;
 };
 
 static void bmp085_start(void *);
@@ -262,7 +259,6 @@ static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
 	int32_t temperature = 0;
 	uint8_t buffer_tx[2];
 	uint8_t buffer_rx[2] = {0, 0};
-	// device_printf(dev, "uninitialized buffer_rx is %x, %x\n", buffer_rx[0], buffer_rx[1]);
 
 	buffer_tx[0] = BMP_CR;
 	buffer_tx[1] = BMP_MODE_TEMP;
@@ -270,29 +266,15 @@ static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
 		device_printf(dev, "couldnt write to BMP_CR\n");
 		return EIO;
 	}
+	// pause needed
+	pause("sleep between i2c transactions", 15);
 	if (iicdev_readfrom(sc->sc_dev, BMP_DATA, buffer_rx, 2, IIC_WAIT) != 0) {
 		device_printf(dev, "couldnt read from BMP_DATA\n");
 		return EIO;
 	}
-	// uint8_t x2e = 0x2E;
-	// if (iicdev_writeto(sc->sc_dev, 0xF4, &x2e, 1, IIC_WAIT) != 0) {
-	// 	device_printf(dev, "couldnt write to reg to get temp\n");
-	// 	return EIO;
-	// }
-	// uint8_t msb = 0;
-	// uint8_t lsb = 0;
-	// if (iicdev_readfrom(sc->sc_dev, 0xF6, &msb, 1, IIC_WAIT) != 0) {
-	// 	device_printf(dev, "couldnt read from 0xf6\n");
-	// 	return EIO;
-	// }
-	// if (iicdev_readfrom(sc->sc_dev, 0xF7, &lsb, 1, IIC_WAIT) != 0) {
-	// 	device_printf(dev, "couldnt read from 0xf7\n");
-	// 	return EIO;
-	// }
 	device_printf(dev, "got bmp085 temps: %x, %x\n", buffer_rx[0], buffer_rx[1]);
 
 	utemp = (int32_t)((buffer_rx[0] << 8) | buffer_rx[1]);
-	// utemp = (int32_t)((msb<<8) | lsb);
 	device_printf(dev, "utemp is %d\n", utemp);
 
 	x1 = ((utemp-param.ac6) * param.ac5)/32768;
@@ -301,7 +283,9 @@ static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
 	device_printf(dev, "x2 is %d\n", x2);
 	param.b5 = x1 + x2;
 	device_printf(dev, "b5 is %d\n", param.b5);
-	temperature = (param.b5 + 8) / 16;
+	param.b5 = x1+x2;
+
+	temperature = (param.b5 + 8) / 16 - 200;
 	device_printf(dev, "temperature*10 is %d\n", temperature);
 
 	error = sysctl_handle_int(oidp, &temperature, 0, req);
@@ -336,6 +320,7 @@ static int bmp085_pressure_sysctl(SYSCTL_HANDLER_ARGS) {
 		device_printf(dev, "couldnt get pressure at first\n");
 		return EIO;
 	}
+	pause("pause between pressure i2c requests", 2 + (3<<oss));
 
 	if (bmp085_read(sc->sc_dev, sc->sc_addr, BMP_DATA, buffer_rx, 3*sizeof(uint8_t)) != 0) {
 		device_printf(dev, "couldn't actually get pressure\n");
