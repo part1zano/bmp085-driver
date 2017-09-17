@@ -262,7 +262,7 @@ static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
 
 	buffer_tx[0] = BMP_CR;
 	buffer_tx[1] = BMP_MODE_TEMP;
-	if (bmp085_write(sc->sc_dev, sc->sc_addr, buffer_tx, 2*sizeof(uint8_t)) != 0) {
+	if (bmp085_write(sc->sc_dev, sc->sc_addr, buffer_tx, 2) != 0) {
 		device_printf(dev, "couldnt write to BMP_CR\n");
 		return EIO;
 	}
