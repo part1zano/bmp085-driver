@@ -7,7 +7,7 @@ Index: sys/boot/fdt/dts/arm/rpi2.dts
  
  	axi {
 -		gpio: gpio {
-+		bsc0 { /* begin {added by mf} */
++		bsc1 { /* begin {added by mf} */
 +			status = "okay";
 +			bmp@77 {
 +				compatible = "bosch,bmp085";
