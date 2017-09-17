@@ -44,7 +44,7 @@ struct bmp085_softc {
 
 static void bmp085_start(void *);
 static int bmp085_read(device_t, uint32_t, uint8_t, uint8_t *, size_t);
-static int bmp085_write(device_t, uint32_t, uint8_t, uint8_t *, size_t);
+static int bmp085_write(device_t, uint32_t, uint8_t *, size_t);
 static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS);
 static int bmp085_pressure_sysctl(SYSCTL_HANDLER_ARGS);
 
@@ -75,18 +75,18 @@ static int bmp085_read(device_t dev, uint32_t addr, uint8_t reg, uint8_t *data, 
 		{ addr, IIC_M_RD, len, data },
 	};
 
-	if (iicbus_transfer(dev, msg, nitems(msg)) != 0) {
+	if (iicbus_transfer(dev, msg, 2) != 0) {
 		return -1;
 	}
 	return 0;
 }
 
-static int bmp085_write(device_t dev, uint32_t addr, uint8_t reg, uint8_t *data, size_t len) {
+static int bmp085_write(device_t dev, uint32_t addr, uint8_t *data, size_t len) {
 	struct iic_msg msg[1] = {
 		{ addr, IIC_M_WR, len, data },
 	};
 
-	if (iicbus_transfer(dev, msg, nitems(msg)) != 0) {
+	if (iicbus_transfer(dev, msg, 1) != 0) {
 		return -1;
 	}
 	return 0;
@@ -100,7 +100,7 @@ static int bmp085_probe(device_t dev) {
 	device_printf(dev, "probing bmp085\n");
 	
 #ifdef FDT
-	if (!ofw_bus_is_compatible(dev, "siemens,bmp085")) {
+	if (!ofw_bus_is_compatible(dev, "bosch,bmp085")) {
 		return ENXIO;
 	}
 #endif
@@ -154,86 +154,96 @@ static void bmp085_start(void *xdev) {
 			CTLTYPE_INT | CTLFLAG_RD | CTLFLAG_MPSAFE, dev, 34,
 			bmp085_pressure_sysctl, "I", "Current athmospheric pressure");
 	// now we're just setting it up
-	uint8_t buffer_tx;
+	uint8_t reg;
 	uint8_t buffer_rx[2];
 
-	buffer_tx = BMP_AC1;
-	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
+	reg = BMP_AC1;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
 		device_printf(dev, "cannot write to sensor\n");
 		return;
 	}
 	param.ac1 = ((buffer_rx[0] << 8) | buffer_rx[1]);
+	// device_printf(dev, "with ac1, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 
-	buffer_tx = BMP_AC2;
-	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
+	reg = BMP_AC2;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
 		device_printf(dev, "cannot write to sensor\n");
 		return;
 	}
 	param.ac2 = ((buffer_rx[0] << 8) | buffer_rx[1]);
+	// device_printf(dev, "with ac2, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 
-	buffer_tx = BMP_AC3;
-	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
+	reg = BMP_AC3;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
 		device_printf(dev, "cannot write to sensor\n");
 		return;
 	}
 	param.ac3 = ((buffer_rx[0] << 8) | buffer_rx[1]);
+	// device_printf(dev, "with ac3, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 
-	buffer_tx = BMP_AC4;
-	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
+	reg = BMP_AC4;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
 		device_printf(dev, "cannot write to sensor\n");
 		return;
 	}
 	param.ac4 = ((buffer_rx[0] << 8) | buffer_rx[1]);
+	// device_printf(dev, "with ac4, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 
-	buffer_tx = BMP_AC5;
-	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
+	reg = BMP_AC5;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
 		device_printf(dev, "cannot write to sensor\n");
 		return;
 	}
 	param.ac5 = ((buffer_rx[0] << 8) | buffer_rx[1]);
+	// device_printf(dev, "with ac5, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 
-	buffer_tx = BMP_AC6;
-	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
+	reg = BMP_AC6;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
 		device_printf(dev, "cannot write to sensor\n");
 		return;
 	}
 	param.ac6 = ((buffer_rx[0] << 8) | buffer_rx[1]);
+	// device_printf(dev, "with ac6, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 
-	buffer_tx = BMP_B1;
-	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
+	reg = BMP_B1;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
 		device_printf(dev, "cannot write to sensor\n");
 		return;
 	}
 	param.b1 = ((buffer_rx[0] << 8) | buffer_rx[1]);
+	// device_printf(dev, "with b1, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 
-	buffer_tx = BMP_B2;
-	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
+	reg = BMP_B2;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
 		device_printf(dev, "cannot write to sensor\n");
 		return;
 	}
 	param.b2 = ((buffer_rx[0] << 0) | buffer_rx[1]);
+	// device_printf(dev, "with b2, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 
-	buffer_tx = BMP_MB;
-	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
+	reg = BMP_MB;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
 		device_printf(dev, "cannot write to sensor\n");
 		return;
 	}
 	param.mb = ((buffer_rx[0] << 0) | buffer_rx[1]);
+	// device_printf(dev, "with mb, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 
-	buffer_tx = BMP_MC;
-	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
+	reg = BMP_MC;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
 		device_printf(dev, "cannot write to sensor\n");
 		return;
 	}
 	param.mc = ((buffer_rx[0] << 0) | buffer_rx[1]);
+	// device_printf(dev, "with mc, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 
-	buffer_tx = BMP_MD;
-	if (bmp085_read(sc->sc_dev, sc->sc_addr, buffer_tx, buffer_rx, 2*sizeof(uint8_t)) < 0) {
+	reg = BMP_MD;
+	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
 		device_printf(dev, "cannot write to sensor\n");
 		return;
 	}
 	param.md = ((buffer_rx[0] << 0) | buffer_rx[1]);
-	// device_printf(dev, "with md, buffer_rx[1] is %d\n", buffer_rx[1]);
+	// device_printf(dev, "with md, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 	
 	device_printf(dev, "started bmp085\n");
 }
@@ -246,27 +256,51 @@ static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
 	dev = (device_t)arg1;
 	sc = device_get_softc(dev);
 
+	// device_printf(dev, "param.ac3 is %d\n", param.ac3);
 	int32_t utemp;
 	int32_t x1, x2;
 	int32_t temperature = 0;
 	uint8_t buffer_tx[2];
-	uint8_t buffer_rx[2];
+	uint8_t buffer_rx[2] = {0, 0};
+	// device_printf(dev, "uninitialized buffer_rx is %x, %x\n", buffer_rx[0], buffer_rx[1]);
 
 	buffer_tx[0] = BMP_CR;
 	buffer_tx[1] = BMP_MODE_TEMP;
-	if (bmp085_write(sc->sc_dev, sc->sc_addr, BMP_CR, &buffer_tx[1], 1) != 0) {
+	if (bmp085_write(sc->sc_dev, sc->sc_addr, buffer_tx, 2*sizeof(uint8_t)) != 0) {
+		device_printf(dev, "couldnt write to BMP_CR\n");
 		return EIO;
 	}
-	if (bmp085_read(sc->sc_dev, sc->sc_addr, BMP_DATA, buffer_rx, 2*sizeof(uint8_t)) != 0) {
+	if (iicdev_readfrom(sc->sc_dev, BMP_DATA, buffer_rx, 2, IIC_WAIT) != 0) {
+		device_printf(dev, "couldnt read from BMP_DATA\n");
 		return EIO;
 	}
+	// uint8_t x2e = 0x2E;
+	// if (iicdev_writeto(sc->sc_dev, 0xF4, &x2e, 1, IIC_WAIT) != 0) {
+	// 	device_printf(dev, "couldnt write to reg to get temp\n");
+	// 	return EIO;
+	// }
+	// uint8_t msb = 0;
+	// uint8_t lsb = 0;
+	// if (iicdev_readfrom(sc->sc_dev, 0xF6, &msb, 1, IIC_WAIT) != 0) {
+	// 	device_printf(dev, "couldnt read from 0xf6\n");
+	// 	return EIO;
+	// }
+	// if (iicdev_readfrom(sc->sc_dev, 0xF7, &lsb, 1, IIC_WAIT) != 0) {
+	// 	device_printf(dev, "couldnt read from 0xf7\n");
+	// 	return EIO;
+	// }
 	device_printf(dev, "got bmp085 temps: %x, %x\n", buffer_rx[0], buffer_rx[1]);
 
 	utemp = (int32_t)((buffer_rx[0] << 8) | buffer_rx[1]);
+	// utemp = (int32_t)((msb<<8) | lsb);
+	device_printf(dev, "utemp is %d\n", utemp);
 
 	x1 = ((utemp-param.ac6) * param.ac5)/32768;
+	device_printf(dev, "x1 is %d\n", x1);
 	x2 = (param.mc*2048) / (x1 + param.md);
+	device_printf(dev, "x2 is %d\n", x2);
 	param.b5 = x1 + x2;
+	device_printf(dev, "b5 is %d\n", param.b5);
 	temperature = (param.b5 + 8) / 16;
 	device_printf(dev, "temperature*10 is %d\n", temperature);
 
@@ -296,9 +330,9 @@ static int bmp085_pressure_sysctl(SYSCTL_HANDLER_ARGS) {
 	uint8_t buffer_rx[3];
 
 	b3 = 0;
-
+	buffer_tx[1] = BMP_CR;
 	buffer_tx[0] = BMP_MODE_PR0+(oss<<6);
-	if (bmp085_write(sc->sc_dev, sc->sc_addr, BMP_CR, &buffer_tx[1], 1) != 0) {
+	if (bmp085_write(sc->sc_dev, sc->sc_addr, buffer_tx, 2*sizeof(uint8_t)) != 0) {
 		device_printf(dev, "couldnt get pressure at first\n");
 		return EIO;
 	}
@@ -307,6 +341,7 @@ static int bmp085_pressure_sysctl(SYSCTL_HANDLER_ARGS) {
 		device_printf(dev, "couldn't actually get pressure\n");
 		return EIO;
 	}
+	device_printf(dev, "buffer_rx is: {%x, %x, %x}\n", buffer_rx[0], buffer_rx[1], buffer_rx[2]);
 
 	upress = (int32_t)((buffer_rx[0] << 16) | (buffer_rx[1] << 8) | buffer_rx[2]);
 	upress = upress >> (8-oss);
