@@ -29,6 +29,7 @@
 #include "bmp085.h"
 
 static bmp085_param param;
+
 static int bmp085_probe(device_t);
 static int bmp085_attach(device_t);
 static int bmp085_detach(device_t);
@@ -146,131 +147,109 @@ static void bmp085_start(void *xdev) {
 
 	SYSCTL_ADD_PROC(ctx, tree, OID_AUTO, "temperature",
 			CTLTYPE_INT | CTLFLAG_RD | CTLFLAG_MPSAFE, dev, 33,
-			bmp085_temp_sysctl, "IK1", "Current temperature");
+			bmp085_temp_sysctl, "IK1", "Current temperature"); // IK1 stands for decikelvins
 	SYSCTL_ADD_PROC(ctx, tree, OID_AUTO, "pressure",
 			CTLTYPE_INT | CTLFLAG_RD | CTLFLAG_MPSAFE, dev, 34,
 			bmp085_pressure_sysctl, "I", "Current athmospheric pressure");
-	// now we're just setting it up
+	// now we're getting calibration parameters
 	uint8_t reg;
 	uint8_t buffer_rx[2];
 
 	reg = BMP_AC1;
 	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		device_printf(dev, "cannot write to sensor\n");
+		device_printf(dev, "cannot read calibration parameter %s from sensor\n", "ac1");
 		return;
 	}
-	// param.ac1 = 0;
-	// param.ac1 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	param.ac1 = buffer_rx[0] * 256 + buffer_rx[1];
 	// device_printf(dev, "with ac1, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 	// device_printf(dev, "param.ac1 is %x\n", param.ac1);
 
 	reg = BMP_AC2;
 	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		device_printf(dev, "cannot write to sensor\n");
+		device_printf(dev, "cannot read calibration parameter %s from sensor\n", "ac2");
 		return;
 	}
-	// param.ac2 = 0;
-	// param.ac2 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	param.ac2 = buffer_rx[0] * 256 + buffer_rx[1];
 	// device_printf(dev, "with ac2, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 	// device_printf(dev, "param.ac2 is %x\n", param.ac2);
 
 	reg = BMP_AC3;
 	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		device_printf(dev, "cannot write to sensor\n");
+		device_printf(dev, "cannot read calibration parameter %s from sensor\n", "ac3");
 		return;
 	}
-	// param.ac3 = 0;
-	// param.ac3 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	param.ac3 = buffer_rx[0] * 256 + buffer_rx[1];
 	// device_printf(dev, "with ac3, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 	// device_printf(dev, "param.ac3 is %x\n", param.ac3);
 
 	reg = BMP_AC4;
 	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		device_printf(dev, "cannot write to sensor\n");
+		device_printf(dev, "cannot read calibration parameter %s from sensor\n", "ac4");
 		return;
 	}
-	// param.ac4 = 0;
-	// param.ac4 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	param.ac4 = buffer_rx[0] * 256 + buffer_rx[1];
 	// device_printf(dev, "with ac4, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 	// device_printf(dev, "param.ac4 is %x\n", param.ac4);
 
 	reg = BMP_AC5;
 	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		device_printf(dev, "cannot write to sensor\n");
+		device_printf(dev, "cannot read calibration parameter %s from sensor\n", "ac5");
 		return;
 	}
-	// param.ac5 = 0;
-	// param.ac5 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	param.ac5 = buffer_rx[0] * 256 + buffer_rx[1];
 	// device_printf(dev, "with ac5, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 	// device_printf(dev, "param.ac5 is %x\n", param.ac5);
 
 	reg = BMP_AC6;
 	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		device_printf(dev, "cannot write to sensor\n");
+		device_printf(dev, "cannot read calibration parameter %s from sensor\n", "ac6");
 		return;
 	}
-	// param.ac6 = 0;
-	// param.ac6 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	param.ac6 = buffer_rx[0] * 256 + buffer_rx[1];
 	// device_printf(dev, "with ac6, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 	// device_printf(dev, "param.ac6 is %x\n", param.ac6);
 
 	reg = BMP_B1;
 	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		device_printf(dev, "cannot write to sensor\n");
+		device_printf(dev, "cannot read calibration parameter %s from sensor\n", "b1");
 		return;
 	}
-	// param.b1 = 0;
-	// param.b1 = ((buffer_rx[0] << 8) | buffer_rx[1]);
 	param.b1 = buffer_rx[0] * 256 + buffer_rx[1];
 	// device_printf(dev, "with b1, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 	// device_printf(dev, "param.b1 is %x\n", param.b1);
 
 	reg = BMP_B2;
 	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		device_printf(dev, "cannot write to sensor\n");
+		device_printf(dev, "cannot read calibration parameter %s from sensor\n", "b2");
 		return;
 	}
-	// param.b2 = 0;
-	// param.b2 = ((buffer_rx[0] << 0) | buffer_rx[1]);
 	param.b2 = buffer_rx[0] * 256 + buffer_rx[1];
 	// device_printf(dev, "with b2, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 	// device_printf(dev, "param.b2 is %x\n", param.b2);
 
 	reg = BMP_MB;
 	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		device_printf(dev, "cannot write to sensor\n");
+		device_printf(dev, "cannot read calibration parameter %s from sensor\n", "mb");
 		return;
 	}
-	// param.mb = 0;
-	// param.mb = ((buffer_rx[0] << 0) | buffer_rx[1]);
 	param.mb = buffer_rx[0] * 256 + buffer_rx[1];
 	// device_printf(dev, "with mb, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 	// device_printf(dev, "param.mb is %x\n", param.mb);
 
 	reg = BMP_MC;
 	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		device_printf(dev, "cannot write to sensor\n");
+		device_printf(dev, "cannot read calibration parameter %s from sensor\n", "mc");
 		return;
 	}
-	// param.mc = 0;
-	// param.mc = ((buffer_rx[0] << 0) | buffer_rx[1]);
 	param.mc = buffer_rx[0] * 256 + buffer_rx[1];
 	// device_printf(dev, "with mc, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 	// device_printf(dev, "param.mc is %x\n", param.mc);
 
 	reg = BMP_MD;
 	if (bmp085_read(sc->sc_dev, sc->sc_addr, reg, buffer_rx, 2*sizeof(uint8_t)) < 0) {
-		device_printf(dev, "cannot write to sensor\n");
+		device_printf(dev, "cannot read calibration parameter %s from sensor\n", "md");
 		return;
 	}
-	// param.md = 0;
-	// param.md = ((buffer_rx[0] << 0) | buffer_rx[1]);
 	param.md = buffer_rx[0] * 256 + buffer_rx[1];
 	// device_printf(dev, "with md, buffer_rx is {%x, %x}\n", buffer_rx[0], buffer_rx[1]);
 	// device_printf(dev, "param.md is %x\n", param.md);
@@ -286,7 +265,6 @@ static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
 	dev = (device_t)arg1;
 	sc = device_get_softc(dev);
 
-	// device_printf(dev, "param.ac3 is %d\n", param.ac3);
 	int32_t utemp;
 	int32_t x1, x2;
 	int32_t temperature = 0;
@@ -318,9 +296,9 @@ static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
 	// device_printf(dev, "b5 is %d\n", param.b5);
 
 	temperature = (param.b5 + 8) / 16;
-	// temperature -= 150; // XXX :: I don't know why it shows more than it should
 	// device_printf(dev, "temperature*10 is %d\n", temperature);
-	temperature += 2730;
+	temperature += 2730; // to use decikelvins
+
 	error = sysctl_handle_int(oidp, &temperature, 0, req);
 	if (error != 0 || req -> newptr == NULL) {
 		return error;
@@ -393,7 +371,7 @@ static int bmp085_pressure_sysctl(SYSCTL_HANDLER_ARGS) {
 	x1 = (x1*3038)/65536;
 	x2 = (-7357*pressure)/65536;
 	pressure = pressure + (x1 + x2 + 3791)/16;
-	// pressure -= 5000; // XXX :: I don't know why it shows more than it should
+	// deivce_printf(dev, "pressure in Pa is %d\n", pressure);
 
 	error = sysctl_handle_int(oidp, &pressure, 0, req);
 	if (error != 0 || req -> newptr == NULL) {
