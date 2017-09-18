@@ -146,7 +146,7 @@ static void bmp085_start(void *xdev) {
 
 	SYSCTL_ADD_PROC(ctx, tree, OID_AUTO, "temperature",
 			CTLTYPE_INT | CTLFLAG_RD | CTLFLAG_MPSAFE, dev, 33,
-			bmp085_temp_sysctl, "I", "Current temperature");
+			bmp085_temp_sysctl, "IK1", "Current temperature");
 	SYSCTL_ADD_PROC(ctx, tree, OID_AUTO, "pressure",
 			CTLTYPE_INT | CTLFLAG_RD | CTLFLAG_MPSAFE, dev, 34,
 			bmp085_pressure_sysctl, "I", "Current athmospheric pressure");
@@ -320,7 +320,7 @@ static int bmp085_temp_sysctl(SYSCTL_HANDLER_ARGS) {
 	temperature = (param.b5 + 8) / 16;
 	// temperature -= 150; // XXX :: I don't know why it shows more than it should
 	// device_printf(dev, "temperature*10 is %d\n", temperature);
-
+	temperature += 2730;
 	error = sysctl_handle_int(oidp, &temperature, 0, req);
 	if (error != 0 || req -> newptr == NULL) {
 		return error;
